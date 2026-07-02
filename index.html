@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FAD Trilogy — Concept Cross-Reference Hub</title>
+<style>
+  :root {
+    --navy: #1F3864; --blue: #2E5395; --slate: #44546A;
+    --clean: #1F7A3F; --escalating: #2E7D32; --overlap: #B8860B;
+    --conflict: #C00000; --open: #7B3F9E; --crosscutting: #1565C0;
+    --vol3only: #555555; --planned: #0E7C86;
+    --bg: #FAFAFA; --border: #DDDDDD;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; background: var(--bg); color: #1a1a1a; margin: 0; padding: 0; }
+
+  /* ---------- LOCK SCREEN ---------- */
+  #lockScreen {
+    position: fixed; inset: 0; background: var(--navy); display: flex; align-items: center; justify-content: center; z-index: 999;
+  }
+  #lockBox { background: white; border-radius: 8px; padding: 36px 40px; width: 360px; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  #lockBox h2 { margin: 0 0 6px 0; color: var(--navy); font-size: 20px; }
+  #lockBox p.hint { color: #777; font-size: 12.5px; margin: 0 0 18px 0; }
+  #lockBox input { width: 100%; padding: 10px 12px; font-size: 15px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px; }
+  #lockBox button { width: 100%; padding: 10px; font-size: 14px; background: var(--navy); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+  #lockBox button:hover { background: var(--blue); }
+  #lockError { color: var(--conflict); font-size: 13px; height: 18px; margin-top: 6px; }
+  #lockBox .disclaimer { font-size: 11px; color: #999; margin-top: 16px; line-height: 1.4; }
+
+  #app { display: none; }
+
+  header { background: var(--navy); color: white; padding: 24px 32px 18px 32px; display: flex; justify-content: space-between; align-items: flex-start; }
+  header h1 { margin: 0 0 4px 0; font-size: 24px; }
+  header p.sub { margin: 0; color: #C9D6EA; font-size: 14px; max-width: 700px; }
+  #lockBtn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 7px 14px; border-radius: 5px; cursor: pointer; font-size: 12.5px; white-space: nowrap; }
+  #lockBtn:hover { background: rgba(255,255,255,0.25); }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 20px 32px 60px 32px; }
+
+  #syncBanner { padding: 10px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .sync-synced { background: #E8F5E9; color: #1F7A3F; border: 1px solid #B8E0BA; }
+  .sync-local { background: #FFF3E0; color: #A05A00; border: 1px solid #F0D0A0; }
+  .sync-defaults { background: #EEF2FA; color: var(--navy); border: 1px solid #CCD8EE; }
+
+  .stats-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0 22px 0; }
+  .stat-card { background: white; border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; min-width: 130px; flex: 1; }
+  .stat-card .num { font-size: 24px; font-weight: bold; color: var(--navy); }
+  .stat-card .label { font-size: 12px; color: #555; margin-top: 2px; }
+
+  .priority-panel { background: #FFF6F6; border: 1px solid #F0C0C0; border-left: 5px solid var(--conflict); border-radius: 6px; padding: 16px 20px; margin-bottom: 24px; }
+  .priority-panel h2 { margin-top: 0; font-size: 16px; color: var(--conflict); }
+  .priority-panel ul { margin: 8px 0 0 0; padding-left: 20px; }
+  .priority-panel li { margin-bottom: 7px; font-size: 14px; line-height: 1.4; }
+  .priority-panel li b { cursor: pointer; color: var(--navy); text-decoration: underline; }
+
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; background: white; border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; margin-bottom: 16px; position: sticky; top: 0; z-index: 10; }
+  .toolbar input[type=text] { flex: 2; min-width: 200px; padding: 8px 11px; border: 1px solid #ccc; border-radius: 5px; font-size: 13.5px; }
+  .toolbar select { padding: 8px 9px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; background: white; }
+  .toolbar .count { font-size: 12.5px; color: #666; margin-left: auto; white-space: nowrap; }
+  .btn { padding: 8px 14px; border-radius: 5px; font-size: 13px; font-weight: bold; cursor: pointer; border: none; }
+  .btn-primary { background: var(--navy); color: white; }
+  .btn-primary:hover { background: var(--blue); }
+  .btn-outline { background: white; color: var(--navy); border: 1px solid var(--navy); }
+  .btn-outline:hover { background: #EEF2FA; }
+  .btn-danger { background: white; color: var(--conflict); border: 1px solid var(--conflict); }
+  .btn-danger:hover { background: #FFF0F0; }
+  .btn-small { padding: 4px 10px; font-size: 11.5px; }
+
+  table { width: 100%; border-collapse: collapse; background: white; border: 1px solid var(--border); }
+  thead th { background: var(--navy); color: white; text-align: left; padding: 9px 10px; font-size: 12.5px; position: sticky; top: 58px; }
+  tbody tr.data-row { border-bottom: 1px solid #eee; }
+  tbody tr.data-row:hover { background: #F3F6FB; }
+  tbody tr.data-row.dragging { opacity: 0.4; }
+  tbody td { padding: 10px 10px; font-size: 13px; vertical-align: top; cursor: pointer; }
+  td.drag-handle { width: 26px; cursor: grab; color: #bbb; text-align: center; font-size: 16px; user-select: none; }
+  td.drag-handle:active { cursor: grabbing; }
+  td.name { font-weight: bold; color: var(--navy); width: 19%; }
+  td.category { color: #555; width: 11%; font-size: 12px; }
+  td.origin { width: 17%; font-size: 12px; color: #333; }
+  td.status { width: 9%; }
+  td.fad4 { width: 19%; font-size: 12px; color: #333; }
+  td.actions { width: 9%; text-align: right; white-space: nowrap; }
+
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 10px; font-size: 10.5px; font-weight: bold; color: white; white-space: nowrap; }
+  .badge-clean { background: var(--clean); } .badge-escalating { background: var(--escalating); }
+  .badge-overlap { background: var(--overlap); } .badge-conflict { background: var(--conflict); }
+  .badge-open { background: var(--open); } .badge-crosscutting { background: var(--crosscutting); }
+  .badge-vol3only { background: var(--vol3only); } .badge-planned { background: var(--planned); }
+
+  .detail-row td { background: #F7F9FC; padding: 16px 20px; font-size: 13.5px; line-height: 1.5; border-bottom: 2px solid var(--navy); cursor: default; }
+  .detail-row .appears { margin-top: 8px; }
+  .detail-row .appears span.chip { display: inline-block; background: #E7ECF5; color: var(--navy); border-radius: 4px; padding: 3px 8px; margin: 2px 4px 2px 0; font-size: 11.5px; }
+  .detail-row .notes { margin-top: 10px; padding: 10px 12px; background: white; border-left: 3px solid var(--navy); border-radius: 3px; }
+  .detail-row .fad4box { margin-top: 10px; padding: 10px 12px; background: white; border-left: 3px solid var(--planned); border-radius: 3px; }
+
+  /* ---------- EDIT FORM ---------- */
+  .edit-row td { background: #FFFDF0; padding: 14px 18px; border-bottom: 2px solid var(--overlap); cursor: default; }
+  .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+  .edit-grid label { display: block; font-size: 11px; font-weight: bold; color: #555; margin-bottom: 3px; }
+  .edit-grid input[type=text], .edit-grid select, .edit-grid textarea {
+    width: 100%; padding: 7px 9px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; font-family: Arial, sans-serif;
+  }
+  .edit-grid textarea { resize: vertical; }
+  .edit-full { grid-column: 1 / -1; }
+  .edit-actions { grid-column: 1 / -1; display: flex; gap: 8px; margin-top: 6px; justify-content: flex-end; }
+  .checkbox-row { display: flex; align-items: center; gap: 6px; font-size: 12.5px; }
+
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 0 18px 0; font-size: 12px; color: #444; }
+  .legend .item { display: flex; align-items: center; gap: 5px; }
+
+  #exportModal, #importModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 500; align-items: center; justify-content: center; }
+  #exportModal .box, #importModal .box { background: white; border-radius: 8px; padding: 24px; width: 600px; max-width: 90vw; }
+  #exportModal textarea, #importModal textarea { width: 100%; height: 220px; font-family: monospace; font-size: 11.5px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+
+  footer { text-align: center; color: #999; font-size: 11.5px; padding: 30px 0 10px 0; }
+</style>
+</head>
+<body>
+
+<!-- ============ LOCK SCREEN ============ -->
+<div id="lockScreen">
+  <div id="lockBox">
+    <h2>FAD Trilogy Concept Hub</h2>
+    <p class="hint">Authors only. Enter the shared password to continue.</p>
+    <input type="password" id="pwInput" placeholder="Password" onkeydown="if(event.key==='Enter') tryUnlock()">
+    <button onclick="tryUnlock()">Unlock</button>
+    <div id="lockError"></div>
+    <div class="disclaimer">This is a lightweight access gate for a shared working document, not real security. Anyone with the password (or basic browser dev tools) can get in — don't rely on it to protect anything sensitive.</div>
+  </div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div id="app">
+  <header>
+    <div>
+      <h1>FAD Trilogy — Concept Cross-Reference Hub</h1>
+      <p class="sub">Living, editable document. Central navigation for concepts, frameworks, and thematic threads across Volumes 1-3. Drag rows to reorder; click Edit to update any entry.</p>
+    </div>
+    <button id="lockBtn" onclick="lockPage()">Lock page</button>
+  </header>
+
+  <div class="container">
+
+    <div id="syncBanner"></div>
+
+    <div class="stats-row" id="statsRow"></div>
+
+    <div class="priority-panel">
+      <h2>Priority Findings — worth resolving before further drafting</h2>
+      <ul id="priorityList"></ul>
+    </div>
+
+    <div class="legend">
+      <div class="item"><span class="badge badge-clean">CLEAN</span> single origin, no issues</div>
+      <div class="item"><span class="badge badge-escalating">ESCALATING</span> deepened over volumes as intended</div>
+      <div class="item"><span class="badge badge-overlap">OVERLAP</span> re-treated — consolidation recommended</div>
+      <div class="item"><span class="badge badge-conflict">CONFLICT</span> incompatible versions</div>
+      <div class="item"><span class="badge badge-open">OPEN</span> unresolved, needs a decision</div>
+      <div class="item"><span class="badge badge-planned">PLANNED</span> has a FAD_4 home, not yet drafted</div>
+      <div class="item"><span class="badge badge-crosscutting">CROSS-CUTTING</span> not owned by one chapter</div>
+      <div class="item"><span class="badge badge-vol3only">VOL. 3 ONLY</span> new, no Books 1-2 precedent</div>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" id="searchBox" placeholder="Search concept names, chapters, notes...">
+      <select id="categoryFilter"></select>
+      <select id="statusFilter"></select>
+      <button class="btn btn-primary" onclick="addNewConcept()">+ Add concept</button>
+      <button class="btn btn-outline" onclick="openExport()">Export</button>
+      <button class="btn btn-outline" onclick="openImport()">Import</button>
+      <span class="count" id="resultCount"></span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Concept</th>
+          <th>Category</th>
+          <th>Origin (current manuscript)</th>
+          <th>Status</th>
+          <th>Planned location (FAD_4 outline)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+
+    <footer>FAD Volume 3 project — living concept hub. Reordering, edits, and new entries save automatically. Use Export regularly to keep an offline backup.</footer>
+  </div>
+</div>
+
+<!-- ============ EXPORT MODAL ============ -->
+<div id="exportModal">
+  <div class="box">
+    <h3 style="margin-top:0;">Export current data</h3>
+    <p style="font-size:13px;color:#555;">Copy this and send it to your co-author, or save it as a backup. They can paste it back in via Import.</p>
+    <textarea id="exportText" readonly></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="copyExport()">Copy to clipboard</button>
+      <button class="btn btn-primary" onclick="closeExport()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ IMPORT MODAL ============ -->
+<div id="importModal">
+  <div class="box">
+    <h3 style="margin-top:0;">Import data</h3>
+    <p style="font-size:13px;color:#555;">Paste data exported from this hub. This <b>replaces</b> everything currently loaded — export first if you want a backup.</p>
+    <textarea id="importText" placeholder="Paste exported JSON here..."></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeImport()">Cancel</button>
+      <button class="btn btn-danger" onclick="doImport()">Replace data</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// FAD TRILOGY CONCEPT DATA — seed/default values.
+// Live data is loaded from storage at runtime; this array only seeds
+// a brand-new install or acts as the fallback if storage is empty.
+// fad4Location = where this content is slated to live per the FAD_4.docx
+// tentative outline (JMW's Book One / Book 2 chapter list, 6/27/2026 memo) —
+// NOT the same as "origin," which is where the content actually sits in the
+// current manuscript today. The two frequently disagree.
+// ============================================================
+
+const DEFAULT_CONCEPTS = [
+
+{ id: "viability", name: "Student Viability (academic readiness × developmental readiness)", category: "Core Framework — Student", status: "escalating",
+  origin: "Ch. 11 — Academic and Developmental Readiness (full theoretical development of both axes)",
+  appearsIn: ["Preface (term introduced)", "Ch. 11 (full development)", "Ch. 16 (typology named)", "Ch. 19 (environments matched to it)", "Ch. 21 (mobility across it)", "Vol. 3 Ch. 3 (instruments to measure it)"],
+  fad4Location: "Book One, Ch. 6 — \"Student Viability and Student Differences\" (exact title match)",
+  notes: "Clean five/six-stop arc: define the axes (11) → name the types (16) → match environments (19) → theorize movement (21) → build instruments to measure it (Vol. 3 Ch. 3). This is the trilogy's best-executed concept lineage.",
+  priority: false },
+
+{ id: "fivetypes", name: "Five Student Types — Competitors, Explorers, Practitioners, At-Risk, RANDOs", category: "Core Framework — Student", status: "escalating",
+  origin: "Ch. 16 — The Typology of Students (full definitions)",
+  appearsIn: ["Ch. 16 (definitions)", "Ch. 17 (Explorers deep dive)", "Ch. 19 (environment matching + RANDOs subsection)", "Ch. 21 (mobility types)", "Ch. 23 (capital-environment table)", "Vol. 3 Ch. 1 (Ashcombe case)", "Vol. 3 Ch. 2"],
+  fad4Location: "Book One, Ch. 9 — \"Typology of Students\" (exact title match)",
+  notes: "Core recurring vocabulary, used consistently. Ch. 19's RANDOs treatment is the fullest.",
+  priority: false },
+
+{ id: "studentcapital", name: "Student Capital — Human / Social / Cultural / Maturity", category: "Core Framework — Student", status: "escalating",
+  origin: "Ch. 5 — Student Capital and Education as Capital Development",
+  appearsIn: ["Ch. 5 (full framework)", "Ch. 11 (\"Student Capital, Student Viability, and Student Ability\" section)", "Ch. 20 (explicit parallel to institutional capital)"],
+  fad4Location: "Book One, Ch. 4 — \"Student Capital\" (exact title match)",
+  notes: "Foundational — direct structural template Ch. 20 uses to build Institutional Capital.",
+  priority: false },
+
+{ id: "knowledgetypology", name: "Knowledge Typology (declarative / procedural / conceptual / tacit / metacognitive)", category: "Core Framework — Student", status: "conflict",
+  origin: "Ch. 3 — Knowledge as an Economic Good (5-part version)",
+  appearsIn: ["Ch. 3 (5-part)", "Ch. 8 (\"A Working Typology of Knowledge\" — verify against Ch. 3)", "Volume 3 raw material (3-part simplified version)"],
+  fad4Location: "Book 2, Ch. 3 — \"The Transmission and Cultivation of Knowledge\" (inferred, not an exact title match — flag for confirmation)",
+  notes: "PRIORITY: at least two different granularities of the same idea circulate (5-part vs. 3-part). Needs one canonical version.",
+  priority: true },
+
+{ id: "selectnurturerepair", name: "Select / Nurture / Repair (pedagogical logic precursor)", category: "Core Framework — Student", status: "escalating",
+  origin: "Ch. 12 — The Logic of Selection",
+  appearsIn: ["Ch. 12 (three-part precursor)", "Ch. 19 (becomes the four-part Learning Environments model)"],
+  fad4Location: "Book One, Ch. 13 — \"Learning Environments\" (terminal home; Ch. 12's precursor content maps loosely to Book One Ch. 2, \"Selection by Colleges\")",
+  notes: "Conceptual ancestor of the four Learning Environments.",
+  priority: false },
+
+{ id: "exploration", name: "Exploration Theory (structured exposure vs. drift)", category: "Core Framework — Student", status: "escalating",
+  origin: "Ch. 17 — The Illusion of Exploration",
+  appearsIn: ["Ch. 17 (full)", "Ch. 19 (Greenhouse pedagogy section)", "Ch. 21 (mobility)"],
+  fad4Location: "Book One, Ch. 11 — \"The Illusion of Exploration\" (exact title match)",
+  notes: "Clean escalation — Ch. 17 argues it, Ch. 19 operationalizes it as the Greenhouse environment's design logic.",
+  priority: false },
+
+{ id: "breadthbytype", name: "Breadth / General Education Calibrated by Student Type", category: "Core Framework — Student", status: "overlap",
+  origin: "Ch. 17 — The Illusion of Exploration (\"Breadth Timing and the Purpose of General Education,\" \"Breadth and Student Type\")",
+  appearsIn: ["Ch. 17 (full — cites Nussbaum + Arum & Roksa)", "Volume 3 raw material 'Breadth_Depth_and_the_Minimum_Viable_Curriculum.docx' (used as primary source for Volume 3 Ch. 4)"],
+  fad4Location: "Book One, Ch. 11 — same slot as Exploration Theory above; FAD_4 does not list a separate gen-ed/breadth chapter, which supports cutting the duplicate rather than keeping it as its own topic",
+  notes: "CORRECTION TO PRIOR WORK: Volume 3 Ch. 4 outline called this 'genuinely missing' from Books 1-2 — wrong, wasn't checked against Ch. 17 yet. The program-portfolio half (faculty depth, enrollment thresholds) is NOT in Ch. 17 and remains genuinely novel; the breadth-by-type half should be trimmed to a pointer.",
+  priority: true },
+
+{ id: "fourfunctions", name: "Four Functions of Education (productive / allocative / reproductive / normative)", category: "Core Framework — Institution", status: "overlap",
+  origin: "Ch. 2 — The System Under Strain (full development + interdependency diagram)",
+  appearsIn: ["Ch. 2 (full, with feedback-loop diagram)", "Ch. 22 (reprised, cross-tabbed against Five Forces)", "Epilogue (referenced)"],
+  fad4Location: "Book One, Ch. 1 — \"The Functions and Challenges of Higher Education\" (exact title match)",
+  notes: "Ch. 22 correctly treats Ch. 2 as source. FAD_4 wants this promoted to Book One's opening chapter — a bigger structural move than a simple retitle.",
+  priority: false },
+
+{ id: "fiveforces", name: "Five Structural Forces (creative destruction / marketization / democratization / multiculturalism / postmodernity)", category: "Core Framework — Institution", status: "overlap",
+  origin: "Ch. 2 — The System Under Strain (\"The Five Forces Reshaping Higher Education\")",
+  appearsIn: ["Ch. 2 (origin)", "Ch. 'X' / Critical Thinking and the Fractured University (dedicated section)", "Ch. 22 (Functions × Challenges matrix)"],
+  fad4Location: "Book 2, Ch. 2 — \"The Forces Pulling Apart the Modern University\" (exact title match)",
+  notes: "PRIORITY: three chapters give this a full treatment. Also structurally significant — FAD_4 plans to SPLIT Functions (→ Book One Ch. 1) and Forces (→ Book 2 Ch. 2) into different books, even though the current draft (Ch. 2) treats them as one combined chapter. That split needs to actually happen, not just be assumed.",
+  priority: true },
+
+{ id: "unbundling", name: "Unbundling of Higher Education (scarcity → replication, modular instruction, customization, AI automation)", category: "Core Framework — Institution", status: "overlap",
+  origin: "Ch. 2 — The System Under Strain (full mechanism-level treatment, already includes a comparison table)",
+  appearsIn: ["Ch. 2 (full)", "Ch. 22 (same mechanisms, now framed through Coase/Williamson and platform-plus-core)", "Postscript (maximal-disruption extrapolation)"],
+  fad4Location: "Ambiguous — TWO different FAD_4 chapters both claim this topic: Book One Ch. 18 (\"The New University: Unbundling, Reconfiguring, and Outsourcing\") AND Book 2 Ch. 11 (\"The Future Institution: Unbundling, Digitalization, and Outsourcing\"). The tentative outline itself has the same duplication problem found in the manuscript.",
+  notes: "PRIORITY — likely the single largest content overlap in the manuscript. Ch. 2's four mechanisms (content separates from institution, modular recombination, AI-driven customization, automation of instructional labor) are repeated almost identically in Ch. 22 with economic theory layered on top. The FAD_4 outline compounds this by planning two separate unbundling chapters in two different books.",
+  priority: true },
+
+{ id: "credencegood", name: "Credence Good / Information Asymmetry", category: "Core Framework — Institution", status: "escalating",
+  origin: "Ch. 6 — The Credence Good Problem (full: adverse selection, principal-agent, monitoring failure, co-production)",
+  appearsIn: ["Ch. 6 (full)", "Ch. 20 (reputational capital)", "Ch. 23 (reputational capital)", "Postscript (trust/verification)", "Vol. 3 Ch. 6 gap item — Buyer's insurance"],
+  fad4Location: "Book 2, Ch. 4 — \"The Information Problem with Higher Education\" (inferred, strong topical fit, not an exact title match)",
+  notes: "One of the trilogy's best-executed threads — diagnosis, consistent reuse, and a genuine policy proposal that closes the loop.",
+  priority: false },
+
+{ id: "mimetic", name: "Mimetic Isomorphism (DiMaggio & Powell)", category: "Core Framework — Institution", status: "overlap",
+  origin: "Ch. 6 — The Credence Good Problem (\"Mimetic Isomorphism: Legitimacy by Imitation\")",
+  appearsIn: ["Ch. 6 (introduces)", "Ch. 9 (full development, paired with Porter)", "Volume 3 raw material (14_x_Integration.docx)"],
+  fad4Location: "Book 2, Ch. 6 — \"Legacy University: The Conglomerate without Synergy\" (inferred; matches Ch. 9's actual current content)",
+  notes: "Ch. 6 introduces the concept; Ch. 9 gives a fuller, differently-angled treatment. Check whether Ch. 9 assumes Ch. 6 or re-explains from scratch.",
+  priority: false },
+
+{ id: "capture", name: "Institutional Capture / Principal-Agent Failure", category: "Core Framework — Institution", status: "overlap",
+  origin: "Previewed Ch. 6 and Ch. 7; fully developed Ch. 10",
+  appearsIn: ["Ch. 6 (preview)", "Ch. 7 (preview — moral hazard angle)", "Ch. 10 (full: cites Chronicle salary data)", "Volume 3 raw material (old Ch. 1 draft, since cut)"],
+  fad4Location: "Book 2, Ch. 7 — \"Legacy Administration: Managing Capture and Opportunism\" (exact title match)",
+  notes: "Three chapters touch this before its full treatment. Confirm Ch. 6/7's previews set up Ch. 10 rather than duplicating it.",
+  priority: false },
+
+{ id: "institutionalcapital", name: "Institutional Capital (Financial / Human / Reputational / Design / Cultural)", category: "Core Framework — Institution", status: "escalating",
+  origin: "Ch. 20 — Institutional Capital (full, heavily cited)",
+  appearsIn: ["Ch. 20 (full)", "Ch. 22", "Ch. 23", "Vol. 3 Ch. 1 (compressed into Viability Matrix axes)", "Vol. 3 Ch. 2 (per-model capital tables)"],
+  fad4Location: "Book One, Ch. 16 — \"Institutional Viability: Institutional Capital and Learning Environments\" (exact title match)",
+  notes: "Strong escalating thread, mirrors Student Capital's structure as intended. Best-cited framework in the manuscript.",
+  priority: false },
+
+{ id: "viabilitymatrix", name: "Institutional Viability Matrix (Resources × Mission Integrity — Leaders / Empires / Niches / Opportunists)", category: "Core Framework — Institution", status: "planned",
+  origin: "Only in Volume 3 raw material — does NOT appear in any finalized Ch. 19–23",
+  appearsIn: ["Volume 3 raw drafts only", "Vol. 3 Ch. 1 (full development)", "Vol. 3 Ch. 7 blueprint (requires it as a named output)"],
+  fad4Location: "Book One, Ch. 17 — \"Institutional Capital and Strategic Types (Capital v Mission Integrity)\" (exact title match — this chapter is explicitly planned in FAD_4)",
+  notes: "MAJOR FINDING from adding this column: this framework DOES have a planned home in Books 1-2 per the tentative outline — it simply hasn't been drafted there yet. This changes the earlier open question from 'was it cut on purpose?' to 'it's on the to-draft list for Book One Ch. 17, and Volume 3 Ch. 1 is currently the only place it actually exists in finished form.' Worth deciding explicitly whether Book One Ch. 17 gets written first (with Volume 3 Ch. 1 then trimmed to a pointer) or Volume 3's version is treated as the source text to backport.",
+  priority: true },
+
+{ id: "archetypes", name: "Four Strategic Archetypes (Platform University / Networked Consortium / Hybrid Specialist / Developmental College)", category: "Core Framework — Institution", status: "escalating",
+  origin: "Ch. 23 — Strategy (sole origin)",
+  appearsIn: ["Ch. 23 (origin)", "Vol. 3 Ch. 1 (cross-walked against Viability Matrix)", "Vol. 3 Ch. 2 (cross-mapped to six deployment models)"],
+  fad4Location: "Book One, Ch. 17 — same slot as the Viability Matrix (\"Capital v Mission Integrity\" — strategic types)",
+  notes: "Clean single-origin framework. Shares a planned FAD_4 home with the Viability Matrix (see above) — worth drafting together.",
+  priority: false },
+
+{ id: "sixmodels", name: "Six Deployment Models (Single-Mission / Split-Mission / Developmental Pipeline / Distributed Federation / Modular Deployment / Domain-Differentiated)", category: "Core Framework — Institution", status: "vol3only",
+  origin: "Volume 3 Ch. 2 (raw source: 14_x_Integration.docx, fully absorbs 06/07/08)",
+  appearsIn: ["Vol. 3 Ch. 2 only"],
+  fad4Location: "No FAD_4 slot — Volume 3 is explicitly the \"how to\" book per JMW's memo and isn't broken into chapters in the FAD_4 outline",
+  notes: "Confirmed no Books 1-2 precedent, verified by direct diff against 06/07/08.",
+  priority: false },
+
+{ id: "specialistgeneralist", name: "Specialist vs. Generalist Institutional Strategy", category: "Core Framework — Institution", status: "escalating",
+  origin: "Ch. 13 — Politics of Measurement (\"Segmentation\" vs. \"Agglomeration\")",
+  appearsIn: ["Ch. 13", "Ch. 19/20", "Vol. 3 Ch. 2/3"],
+  fad4Location: "Book One, Ch. 8 — \"The Politics of Student Heterogeneity\" (inferred)",
+  notes: "Clean escalation from an abstract tension to an operational resolution.",
+  priority: false },
+
+{ id: "porter", name: "Porter — \"Stuck in the Middle\" / Strategic Fit", category: "Recurring Device", status: "clean",
+  origin: "Ch. 9 — The Legacy University",
+  appearsIn: ["Ch. 9", "Ch. 20", "Ch. 23", "Vol. 3 Ch. 1"],
+  fad4Location: "Distributed — not tied to one FAD_4 chapter (citation, not a standalone concept)",
+  notes: "Consistent, well-integrated recurring citation.",
+  priority: false },
+
+{ id: "deming", name: "Deming — System Design / Upstream-Downstream Logic", category: "Recurring Device", status: "clean",
+  origin: "Ch. 14 — Admissions as Upstream Quality Control",
+  appearsIn: ["Ch. 10 (referenced)", "Ch. 14 (full)", "Volume 3 raw material for the old Ch. 1 draft (since cut)"],
+  fad4Location: "Book One, Ch. 2 — \"Selection by Colleges\" (inferred — Ch. 14 doesn't have an exact FAD_4 title match; this is the closest fit)",
+  notes: "See unbundling/viabilitymatrix notes — this citation is why old Volume 3 Ch. 1 was cut (it duplicated Ch. 14 almost entirely).",
+  priority: false },
+
+{ id: "arnett", name: "Arnett — Emerging Adulthood", category: "Recurring Device", status: "clean",
+  origin: "Ch. 19 — Learning Environments (Greenhouse/Explorers)",
+  appearsIn: ["Ch. 17", "Ch. 19"],
+  fad4Location: "Distributed — citation, not chapter-specific",
+  notes: "Consistent supporting citation, no issues.",
+  priority: false },
+
+{ id: "ccrc", name: "CCRC Corequisite Remediation Data", category: "Recurring Device", status: "clean",
+  origin: "Ch. 18 — Remediation as a Systemic Failure",
+  appearsIn: ["Ch. 18", "Ch. 19", "Ch. 21", "Vol. 3 Ch. 2 (Model 5)"],
+  fad4Location: "Book One, Ch. 12 — \"Remediation as Systemic Failure\" (exact title match)",
+  notes: "Good citation discipline — same real data point reused consistently rather than re-sourced each time.",
+  priority: false },
+
+{ id: "nsc", name: "National Student Clearinghouse Research Center — Transfer/Mobility Data", category: "Recurring Device", status: "clean",
+  origin: "Ch. 21 — Designing for Mobility",
+  appearsIn: ["Ch. 21", "Vol. 3 Ch. 2 (Model 4)", "Volume 3 raw material for Ch. 6"],
+  fad4Location: "Book One, Ch. 15 — \"Mobility: Kinds and Pathways\" (exact title match)",
+  notes: "Consistent, no issues.",
+  priority: false },
+
+{ id: "foundationaltheory", name: "Becker / Bourdieu / Spence / Collins (human capital, cultural capital, signaling, credentialism)", category: "Recurring Device", status: "clean",
+  origin: "Ch. 1 bibliography; developed Ch. 2 and Ch. 5",
+  appearsIn: ["Ch. 1", "Ch. 2", "Ch. 5", "throughout"],
+  fad4Location: "Distributed across Book One Ch. 1, 4 and Book 2 Ch. 3 — foundational, not owned by one chapter",
+  notes: "Foundational theoretical citations distributed appropriately.",
+  priority: false },
+
+{ id: "wicked", name: "\"Wicked Problem\" Rhetoric as Evasion", category: "Thematic Thread", status: "clean",
+  origin: "Ch. 14 — Admissions as Upstream Quality Control",
+  appearsIn: ["Ch. 14 (full)", "Volume 3 raw material for the old Ch. 1 draft (since cut)"],
+  fad4Location: "Book One, Ch. 2 — \"Selection by Colleges\" (inferred, no exact title match)",
+  notes: "Single clean origin now that the duplicate Volume 3 draft chapter has been cut.",
+  priority: false },
+
+{ id: "aiaugment", name: "AI as Augmentation, Not Replacement", category: "Thematic Thread", status: "crosscutting",
+  origin: "No single origin — recurs from Ch. 2 onward",
+  appearsIn: ["Ch. 2 (automation of instructional labor)", "Ch. 19 (per-environment AI role)", "Ch. 22 (core vs. platform)", "Postscript (platform marketplace)", "Vol. 3 Ch. 1 (AI as stress test)", "Vol. 3 Ch. 5 (per-year AI role spec)"],
+  fad4Location: "Cross-cutting — spans Book One Ch. 18 and Book 2 Ch. 10–11, no single home; JMW's memo notes a possible separate \"Book 4... maybe all AI\" that could eventually absorb this",
+  notes: "True cross-cutting theme. Worth a single reference statement every other chapter can point back to, rather than each restating the position.",
+  priority: true },
+
+{ id: "prestige", name: "Prestige Ideology / Status Hierarchy Critique", category: "Thematic Thread", status: "escalating",
+  origin: "Ch. 9 — The Legacy University",
+  appearsIn: ["Ch. 9", "Ch. 15 (Fit vs. Fantasy)", "Volume 3 raw material for Ch. 6"],
+  fad4Location: "Book 2, Ch. 6 — \"Legacy University: The Conglomerate without Synergy\" (inferred)",
+  notes: "Clean escalation from diagnosis through student-facing consequences to policy target.",
+  priority: false },
+
+{ id: "facultyroles", name: "Faculty Role Differentiation / Teacher Training by Environment", category: "Thematic Thread", status: "overlap",
+  origin: "Ch. 8 — Legacy Teaching (\"What Teacher Training Would Actually Look Like\")",
+  appearsIn: ["Ch. 8 (general argument)", "Ch. 19 (near-identical section structure, now environment-specific)", "Ch. 20 (architectural implication)", "Vol. 3 Ch. 7 blueprint (Stage 4)"],
+  fad4Location: "Book 2, Ch. 9 — \"Legacy Teaching: Professional Un-Development\" (exact title match) plus Book One Ch. 13 \"Learning Environments\"",
+  notes: "Ch. 8 and Ch. 19 ask structurally the same question with near-identical section titles. Ch. 19's answer is more developed and should be canonical.",
+  priority: false },
+
+{ id: "measurementethics", name: "Diagnostics / Measurement Ethics", category: "Thematic Thread", status: "escalating",
+  origin: "Ch. 13 — Politics of Measurement",
+  appearsIn: ["Ch. 13 (full)", "Ch. 21 (predictive analytics ethics)", "Vol. 3 Ch. 3 (full instrument toolkit, Russell's Paradox)"],
+  fad4Location: "Book One, Ch. 7 — \"The Politics of Measurement\" (exact title match)",
+  notes: "Clean escalating arc from abstract ethics through applied caution to concrete instrument-level guardrails.",
+  priority: false },
+
+{ id: "remediation", name: "Remediation Critique", category: "Thematic Thread", status: "escalating",
+  origin: "Ch. 18 — Remediation as a Systemic Failure",
+  appearsIn: ["Ch. 12 (early framing)", "Ch. 18 (full)", "Vol. 3 Ch. 3 (diagnostic/instrument answer)"],
+  fad4Location: "Book One, Ch. 12 — \"Remediation as Systemic Failure\" (exact title match)",
+  notes: "Clean escalation.",
+  priority: false },
+
+{ id: "riskdebt", name: "Risk Transfer / Moral Hazard / Education as Mixed Good", category: "Thematic Thread", status: "open",
+  origin: "Ch. 7 — Risk, Debt, and Moral Hazard (full)",
+  appearsIn: ["Ch. 7 (full)", "Vol. 3 Ch. 6 gap item — Buyer's insurance"],
+  fad4Location: "NO CLEAR MATCH in the FAD_4 outline — closest candidates are Book One Ch. 5 (\"Upstream Inheritance\") or Book 2 Ch. 10 (\"Business Model given Retrenchment and Digital Transformation\"), neither an exact fit",
+  notes: "Flagging a gap in the tentative outline itself, not just the manuscript: a fully-drafted, substantial current chapter has no obvious planned destination. Worth raising with your co-author directly.",
+  priority: true },
+
+{ id: "accreditation", name: "Accreditation as Constraint", category: "Thematic Thread", status: "escalating",
+  origin: "Ch. 6 — The Credence Good Problem",
+  appearsIn: ["Ch. 6", "Volume 3 raw material for Ch. 6"],
+  fad4Location: "Book 2, Ch. 4 — \"The Information Problem with Higher Education\" (same inferred slot as Credence Good)",
+  notes: "Clean escalation from principle to specific regulatory target.",
+  priority: false },
+
+{ id: "altcredentials", name: "Alternative Credentials / Apprenticeships / Modularity", category: "Thematic Thread", status: "open",
+  origin: "Volume 3 raw material for Ch. 6",
+  appearsIn: ["Vol. 3 Ch. 6", "Postscript (maximal version)"],
+  fad4Location: "No FAD_4 slot — and the Postscript itself isn't listed anywhere in the FAD_4 outline at all, which is worth noting separately",
+  notes: "Volume 3 Ch. 6 is the conservative version of what the Postscript treats as the maximal endpoint. Neither has a Books 1-2 home per the tentative outline.",
+  priority: true },
+
+{ id: "operatororiginator", name: "Operator/Originator Distinction", category: "Thematic Thread", status: "planned",
+  origin: "Not located under this name anywhere in the 26 chapters read for this hub",
+  appearsIn: ["Possibly folded into Ch. 19's Competitor/Practitioner distinction", "Named explicitly in the FAD_4 outline"],
+  fad4Location: "Book One, Ch. 10 — \"Originators and Stewards (Competitors and Practitioners)\" (exact title match)",
+  notes: "MAJOR FINDING from adding this column: FAD_4 explicitly plans this as its own chapter (Book One Ch. 10), which resolves the earlier ambiguity — this wasn't renamed or lost, it simply hasn't been drafted yet as a standalone chapter. The only surviving trace in the current manuscript is one sentence in Ch. 19. This is a to-draft item, not a to-investigate one.",
+  priority: true },
+
+{ id: "ch2collision", name: "Chapter 2 Numbering Collision", category: "Structural Issue", status: "open",
+  origin: "N/A — structural, not conceptual",
+  appearsIn: ["02_The_System_Under_Strain_-_Edited.docx (\"Chapter 2\")", "02__Critical_Thinking_and_the_Fractured_University_-_No_Edits.docx (internally headed \"Chapter X\")"],
+  fad4Location: "Neither current Ch. 1 (\"Myth of College for All\") nor the colliding Ch. 2 pair map cleanly onto FAD_4's Ch. 1 (\"Functions and Challenges\"); the FAD_4 renumbering will need to resolve this collision as part of the larger restructuring, not as a separate fix",
+  notes: "Both files claim chapter 2; the Critical Thinking file's internal header still reads the placeholder \"Chapter X.\" Needs a renumbering decision.",
+  priority: true },
+
+];
+
+
+const PASSWORD_HASH = "27df4fb351eb9fb113dfb99f934afc216d90936308445067ae3c333306917496";
+const STORAGE_KEY = "fad-concept-hub-data";
+const UNLOCK_KEY = "fad-hub-unlocked";
+
+const statusLabels = {
+  clean: "CLEAN", escalating: "ESCALATING", overlap: "OVERLAP", conflict: "CONFLICT",
+  open: "OPEN", planned: "PLANNED", crosscutting: "CROSS-CUTTING", vol3only: "VOL. 3 ONLY"
+};
+
+let state = { concepts: [], draggedId: null };
+
+// ---------------- PASSWORD GATE ----------------
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function tryUnlock() {
+  const val = document.getElementById('pwInput').value;
+  const hash = await sha256(val);
+  if (hash === PASSWORD_HASH) {
+    try { localStorage.setItem(UNLOCK_KEY, '1'); } catch(e) {}
+    showApp();
+  } else {
+    document.getElementById('lockError').textContent = 'Incorrect password.';
+  }
+}
+
+function lockPage() {
+  try { localStorage.removeItem(UNLOCK_KEY); } catch(e) {}
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('lockScreen').style.display = 'flex';
+  document.getElementById('pwInput').value = '';
+  document.getElementById('lockError').textContent = '';
+}
+
+async function showApp() {
+  document.getElementById('lockScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  await loadData();
+  renderAll();
+}
+
+// ---------------- PERSISTENCE ----------------
+function setSyncStatus(kind) {
+  const el = document.getElementById('syncBanner');
+  if (kind === 'synced') {
+    el.className = 'sync-synced';
+    el.innerHTML = '<b>&#10003; Synced</b> — changes save to shared storage and are visible to any author opening this same hub.';
+  } else if (kind === 'local') {
+    el.className = 'sync-local';
+    el.innerHTML = '<b>&#9888; Saved locally only</b> — shared sync isn\'t available in this context (e.g. opened as a downloaded file). Changes are saved on this device only. Use Export/Import to hand changes to your co-author.';
+  } else {
+    el.className = 'sync-defaults';
+    el.innerHTML = '<b>Starting from defaults</b> — no saved data found yet. Your first edit will create the working copy.';
+  }
+}
+
+async function loadData() {
+  // Try shared artifact storage first
+  try {
+    if (window.storage) {
+      const result = await window.storage.get(STORAGE_KEY, true);
+      if (result && result.value) {
+        state.concepts = JSON.parse(result.value);
+        setSyncStatus('synced');
+        return;
+      }
+      setSyncStatus('synced'); // storage available, just empty — will seed below
+      state.concepts = JSON.parse(JSON.stringify(DEFAULT_CONCEPTS));
+      await saveData();
+      return;
+    }
+  } catch (e) {
+    // key not found yet, or storage errored — fall through
+    if (window.storage) {
+      try {
+        state.concepts = JSON.parse(JSON.stringify(DEFAULT_CONCEPTS));
+        setSyncStatus('synced');
+        await saveData();
+        return;
+      } catch(e2) {}
+    }
+  }
+  // Fallback: localStorage (this browser/device only)
+  try {
+    const local = localStorage.getItem(STORAGE_KEY);
+    if (local) {
+      state.concepts = JSON.parse(local);
+      setSyncStatus('local');
+      return;
+    }
+  } catch (e) {}
+  // Final fallback: baked-in defaults, not yet saved anywhere
+  state.concepts = JSON.parse(JSON.stringify(DEFAULT_CONCEPTS));
+  setSyncStatus('defaults');
+  saveData();
+}
+
+async function saveData() {
+  const payload = JSON.stringify(state.concepts);
+  try {
+    if (window.storage) {
+      await window.storage.set(STORAGE_KEY, payload, true);
+      setSyncStatus('synced');
+      try { localStorage.setItem(STORAGE_KEY, payload); } catch(e) {}
+      return;
+    }
+  } catch (e) {}
+  try {
+    localStorage.setItem(STORAGE_KEY, payload);
+    setSyncStatus('local');
+  } catch (e) {}
+}
+
+// ---------------- RENDER ----------------
+function renderAll() {
+  renderStats();
+  renderPriorityList();
+  populateFilters();
+  renderTable();
+}
+
+function renderStats() {
+  const c = state.concepts;
+  const stats = [
+    { num: c.length, label: "Total concepts tracked" },
+    { num: c.filter(x => x.priority).length, label: "Flagged as priority findings" },
+    { num: c.filter(x => x.status === "open").length, label: "Open questions needing a decision" },
+    { num: c.filter(x => x.status === "planned").length, label: "Planned but not yet drafted" },
+    { num: c.filter(x => x.status === "overlap" || x.status === "conflict").length, label: "Overlap / conflict" },
+  ];
+  document.getElementById('statsRow').innerHTML = stats.map(s =>
+    `<div class="stat-card"><div class="num">${s.num}</div><div class="label">${s.label}</div></div>`
+  ).join('');
+}
+
+function renderPriorityList() {
+  const items = state.concepts.filter(c => c.priority);
+  document.getElementById('priorityList').innerHTML = items.map(c =>
+    `<li><b onclick="jumpTo('${c.id}')">${escapeHtml(c.name)}</b> — ${escapeHtml(c.notes.split('.')[0])}.</li>`
+  ).join('');
+}
+
+function populateFilters() {
+  const categories = [...new Set(state.concepts.map(c => c.category))].sort();
+  const statuses = [...new Set(state.concepts.map(c => c.status))];
+  const catSel = document.getElementById('categoryFilter');
+  const curCat = catSel.value;
+  catSel.innerHTML = '<option value="">All categories</option>' + categories.map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`).join('');
+  catSel.value = curCat;
+  const statSel = document.getElementById('statusFilter');
+  const curStat = statSel.value;
+  statSel.innerHTML = '<option value="">All statuses</option>' + statuses.map(s => `<option value="${s}">${statusLabels[s]||s}</option>`).join('');
+  statSel.value = curStat;
+}
+
+function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+function escapeAttr(s) { return escapeHtml(s).replace(/"/g,'&quot;'); }
+
+function getFiltered() {
+  const search = document.getElementById('searchBox').value.toLowerCase();
+  const cat = document.getElementById('categoryFilter').value;
+  const stat = document.getElementById('statusFilter').value;
+  return state.concepts.filter(c => {
+    if (cat && c.category !== cat) return false;
+    if (stat && c.status !== stat) return false;
+    if (search) {
+      const hay = (c.name+" "+c.category+" "+c.origin+" "+c.appearsIn.join(" ")+" "+c.notes+" "+(c.fad4Location||"")).toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+}
+
+function renderTable() {
+  const filtered = getFiltered();
+  document.getElementById('resultCount').textContent = `${filtered.length} of ${state.concepts.length} shown`;
+  const body = document.getElementById('tableBody');
+  body.innerHTML = '';
+  const dragEnabled = !document.getElementById('searchBox').value && !document.getElementById('categoryFilter').value && !document.getElementById('statusFilter').value;
+
+  filtered.forEach(c => {
+    const row = document.createElement('tr');
+    row.className = 'data-row';
+    row.id = "row-" + c.id;
+    row.draggable = dragEnabled;
+    row.innerHTML = `
+      <td class="drag-handle" title="${dragEnabled ? 'Drag to reorder' : 'Clear filters to reorder'}">${dragEnabled ? '&#9776;' : ''}</td>
+      <td class="name">${escapeHtml(c.name)}</td>
+      <td class="category">${escapeHtml(c.category)}</td>
+      <td class="origin">${escapeHtml(c.origin)}</td>
+      <td class="status"><span class="badge badge-${c.status}">${statusLabels[c.status]||c.status}</span></td>
+      <td class="fad4">${escapeHtml(c.fad4Location||'')}</td>
+      <td class="actions"><button class="btn btn-outline btn-small" onclick="event.stopPropagation(); startEdit('${c.id}')">Edit</button></td>
+    `;
+    row.querySelectorAll('td:not(.actions)').forEach(td => td.addEventListener('click', () => toggleDetail(c.id)));
+    if (dragEnabled) {
+      row.addEventListener('dragstart', () => { state.draggedId = c.id; row.classList.add('dragging'); });
+      row.addEventListener('dragend', () => { row.classList.remove('dragging'); });
+      row.addEventListener('dragover', (e) => e.preventDefault());
+      row.addEventListener('drop', (e) => { e.preventDefault(); reorderRows(state.draggedId, c.id); });
+    }
+    body.appendChild(row);
+  });
+}
+
+function reorderRows(draggedId, targetId) {
+  if (draggedId === targetId) return;
+  const arr = state.concepts;
+  const fromIdx = arr.findIndex(c => c.id === draggedId);
+  const toIdx = arr.findIndex(c => c.id === targetId);
+  if (fromIdx < 0 || toIdx < 0) return;
+  const [item] = arr.splice(fromIdx, 1);
+  arr.splice(toIdx, 0, item);
+  saveData();
+  renderTable();
+}
+
+function toggleDetail(id) {
+  const existingDetail = document.getElementById("detail-" + id);
+  const existingEdit = document.getElementById("edit-" + id);
+  if (existingEdit) return; // don't collapse while editing
+  document.querySelectorAll('.detail-row').forEach(el => el.remove());
+  if (existingDetail) return;
+  const c = state.concepts.find(x => x.id === id);
+  if (!c) return;
+  const row = document.getElementById('row-' + id);
+  const detail = document.createElement('tr');
+  detail.className = 'detail-row';
+  detail.id = "detail-" + id;
+  detail.innerHTML = `<td colspan="7">
+      <div><b>Full appearance list:</b></div>
+      <div class="appears">${c.appearsIn.map(a => `<span class="chip">${escapeHtml(a)}</span>`).join('')}</div>
+      <div class="notes"><b>Notes:</b> ${escapeHtml(c.notes)}</div>
+      <div class="fad4box"><b>Planned location (FAD_4 outline):</b> ${escapeHtml(c.fad4Location||'—')}</div>
+    </td>`;
+  row.parentNode.insertBefore(detail, row.nextSibling);
+}
+
+function jumpTo(id) {
+  document.getElementById('searchBox').value = '';
+  document.getElementById('categoryFilter').value = '';
+  document.getElementById('statusFilter').value = '';
+  renderTable();
+  setTimeout(() => {
+    const row = document.getElementById('row-' + id);
+    if (row) { if (row.scrollIntoView) row.scrollIntoView({behavior:'smooth', block:'center'}); toggleDetail(id); }
+  }, 30);
+}
+
+// ---------------- EDIT / ADD / DELETE ----------------
+function startEdit(id) {
+  document.querySelectorAll('.detail-row').forEach(el => el.remove());
+  document.querySelectorAll('.edit-row').forEach(el => el.remove());
+  const c = state.concepts.find(x => x.id === id);
+  if (!c) return;
+  const row = document.getElementById('row-' + id);
+  const editRow = buildEditRow(c, false);
+  row.parentNode.insertBefore(editRow, row.nextSibling);
+}
+
+function addNewConcept() {
+  document.querySelectorAll('.detail-row').forEach(el => el.remove());
+  document.querySelectorAll('.edit-row').forEach(el => el.remove());
+  const blank = { id: '__new__', name: '', category: '', status: 'open', origin: '', appearsIn: [], fad4Location: '', notes: '', priority: false };
+  const body = document.getElementById('tableBody');
+  const editRow = buildEditRow(blank, true);
+  body.insertBefore(editRow, body.firstChild);
+  if (editRow.scrollIntoView) editRow.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function buildEditRow(c, isNew) {
+  const editRow = document.createElement('tr');
+  editRow.className = 'edit-row';
+  editRow.id = 'edit-' + (isNew ? 'new' : c.id);
+  const statusOptions = Object.keys(statusLabels).map(s => `<option value="${s}" ${c.status===s?'selected':''}>${statusLabels[s]}</option>`).join('');
+  editRow.innerHTML = `<td colspan="7"><div class="edit-grid">
+      <div><label>Concept name</label><input type="text" id="f-name" value="${escapeAttr(c.name)}"></div>
+      <div><label>Category</label><input type="text" id="f-category" value="${escapeAttr(c.category)}" placeholder="e.g. Core Framework — Student"></div>
+      <div><label>Origin (current manuscript)</label><input type="text" id="f-origin" value="${escapeAttr(c.origin)}"></div>
+      <div><label>Status</label><select id="f-status">${statusOptions}</select></div>
+      <div class="edit-full"><label>Planned location (FAD_4 outline)</label><input type="text" id="f-fad4" value="${escapeAttr(c.fad4Location||'')}"></div>
+      <div class="edit-full"><label>Also appears in (one per line)</label><textarea id="f-appears" rows="3">${escapeHtml(c.appearsIn.join('\n'))}</textarea></div>
+      <div class="edit-full"><label>Notes</label><textarea id="f-notes" rows="3">${escapeHtml(c.notes)}</textarea></div>
+      <div class="edit-full checkbox-row"><input type="checkbox" id="f-priority" ${c.priority?'checked':''}> <label style="margin:0;font-weight:normal;">Flag as priority finding</label></div>
+      <div class="edit-actions">
+        ${isNew ? '' : `<button class="btn btn-danger btn-small" onclick="deleteConcept('${c.id}')">Delete</button>`}
+        <button class="btn btn-outline btn-small" onclick="cancelEdit('${isNew ? 'new' : c.id}', ${isNew})">Cancel</button>
+        <button class="btn btn-primary btn-small" onclick="saveEdit('${isNew ? 'new' : c.id}', ${isNew})">Save</button>
+      </div>
+    </div></td>`;
+  return editRow;
+}
+
+function cancelEdit(id, isNew) {
+  const el = document.getElementById('edit-' + (isNew ? 'new' : id));
+  if (el) el.remove();
+}
+
+function saveEdit(id, isNew) {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { alert('Concept name is required.'); return; }
+  const category = document.getElementById('f-category').value.trim() || 'Uncategorized';
+  const origin = document.getElementById('f-origin').value.trim();
+  const status = document.getElementById('f-status').value;
+  const fad4Location = document.getElementById('f-fad4').value.trim();
+  const appearsIn = document.getElementById('f-appears').value.split('\n').map(s => s.trim()).filter(Boolean);
+  const notes = document.getElementById('f-notes').value.trim();
+  const priority = document.getElementById('f-priority').checked;
+
+  if (isNew) {
+    let newId = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('concept-' + Date.now());
+    let uniqueId = newId, n = 1;
+    while (state.concepts.some(c => c.id === uniqueId)) { uniqueId = newId + '-' + (n++); }
+    state.concepts.unshift({ id: uniqueId, name, category, origin, status, fad4Location, appearsIn, notes, priority });
+  } else {
+    const c = state.concepts.find(x => x.id === id);
+    Object.assign(c, { name, category, origin, status, fad4Location, appearsIn, notes, priority });
+  }
+  saveData();
+  renderAll();
+}
+
+function deleteConcept(id) {
+  if (!confirm('Delete this concept? This cannot be undone here (export first if unsure).')) return;
+  state.concepts = state.concepts.filter(c => c.id !== id);
+  saveData();
+  renderAll();
+}
+
+// ---------------- EXPORT / IMPORT ----------------
+function openExport() {
+  document.getElementById('exportText').value = JSON.stringify(state.concepts, null, 2);
+  document.getElementById('exportModal').style.display = 'flex';
+}
+function closeExport() { document.getElementById('exportModal').style.display = 'none'; }
+function copyExport() {
+  const ta = document.getElementById('exportText');
+  ta.select();
+  try { document.execCommand('copy'); } catch(e) {}
+  try { navigator.clipboard.writeText(ta.value); } catch(e) {}
+}
+function openImport() { document.getElementById('importText').value = ''; document.getElementById('importModal').style.display = 'flex'; }
+function closeImport() { document.getElementById('importModal').style.display = 'none'; }
+function doImport() {
+  const txt = document.getElementById('importText').value.trim();
+  if (!txt) return;
+  try {
+    const parsed = JSON.parse(txt);
+    if (!Array.isArray(parsed)) throw new Error('not an array');
+    state.concepts = parsed;
+    saveData();
+    renderAll();
+    closeImport();
+  } catch (e) {
+    alert('Could not parse that as valid exported data. Check it was copied in full.');
+  }
+}
+
+// ---------------- INIT ----------------
+document.getElementById('searchBox').addEventListener('input', renderTable);
+document.getElementById('categoryFilter').addEventListener('change', renderTable);
+document.getElementById('statusFilter').addEventListener('change', renderTable);
+
+(function initLock() {
+  let alreadyUnlocked = false;
+  try { alreadyUnlocked = localStorage.getItem(UNLOCK_KEY) === '1'; } catch(e) {}
+  if (alreadyUnlocked) { showApp(); }
+})();
+</script>
+</body>
+</html>
